@@ -37,9 +37,9 @@ def decode_routes(individual, k=VEHICLES):
 
     return routes 
 
-# GA functions
+# GA function, 
 def create_individual():
-    return random.sample(list(CUSTOMERS.keys()), len(CUSTOMERS))
+    return random.sample(list(CUSTOMERS.keys()), len(CUSTOMERS)) #Permutates the dictionary containing the customer locations
 
 def fitness(individual):
     routes = decode_routes(individual)

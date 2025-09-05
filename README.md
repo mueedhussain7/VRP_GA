@@ -1,12 +1,48 @@
-# VRP_GA
+Vehicle Routing Problem Using Genetic Algorithm
+Overview
 
-#In our code individuals is the same as routes
+This project implements a Genetic Algorithm (GA) to solve the Vehicle Routing Problem (VRP), finding efficient routes for multiple vehicles to serve all customers from a central depot.
 
-Route/Individual = [3, 1, 2, 0, 5, 4]
+Project Structure
+VRP_GA/
+├── data/          # VRP instances (small, medium, large)
+├── ga/            # GA implementation
+├── run_ga.py      # Main script
+├── requirements.txt
+├── README.md
+└── .gitignore
+git
+Installation
+git clone <repo-url>
+cd VRP_GA
+python -m venv venv
+source venv/bin/activate  # macOS/Linux
+pip install -r requirements.txt
 
-so these are routes or individuals from out code, together they make up the 
+Usage
+python run_ga.py
 
-Population = 
-[3, 1, 2, 0, 5, 4],
-[2, 4, 0, 3, 5, 1],
-[1, 0, 3, 2, 5, 4],
+
+Generates route and convergence plots (in results/).
+
+GA parameters are configurable inside run_ga.py.
+
+GA Design
+
+Chromosome: customer permutation
+
+Selection: Tournament selection
+
+Crossover: Ordered Crossover
+
+Mutation: Swap mutation
+
+Fitness: Total Euclidean distance of all routes
+
+Notes
+
+results/ is ignored in Git.
+
+VRP instances: small, medium, large.
+
+Outputs best, average, and worst costs for each instance.

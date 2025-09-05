@@ -1,17 +1,16 @@
 import random
 import math 
+from ga_vrp_instances import SMALL_INSTANCE_1, MEDIUM_INSTANCE_1, LARGE_INSTANCE_1
+
 
 # Problem setup: VRP
-DEPOT = (50, 50)  # The central depot where all vehicles start and end
-CUSTOMERS = {     # Customer locations with IDs as keys
-    0: (20, 30),
-    1: (60, 20),
-    2: (80, 70),
-    3: (30, 60),
-    4: (70, 50),
-    5: (40, 80)
-}
-VEHICLES = 2        # Number of vehicles available for delivery
+
+INSTANCE = SMALL_INSTANCE_1
+
+DEPOT = INSTANCE["DEPOT"]
+CUSTOMERS = INSTANCE["CUSTOMERS"]
+VEHICLES = INSTANCE["VEHICLES"]
+     # Number of vehicles available for delivery
 
 POPULATION_SIZE = 6  # Number of candidate solutions in the GA population
 GENERATIONS = 5      # Number of generations the GA will evolve

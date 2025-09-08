@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
@@ -45,14 +46,15 @@ instances = {
     "Large-2": LARGE_INSTANCE_2,
 }
 
-# QIEA parameter sets (match solve_qiea signature)
+# ------------------- QIEA Parameters -------------------
 params = [
     {"pop_size": 30, "generations": 50, "delta_theta": 0.05},
     {"pop_size": 50, "generations": 100, "delta_theta": 0.05},
     {"pop_size": 80, "generations": 200, "delta_theta": 0.05},
 ]
 
-n_runs = 5  # Independent runs per instance+param
+n_runs = 5  # Number of independent runs per instance+param
+tolerance = 1e-6  # Tolerance for float comparisons
 
 # ------------------- Run Experiments -------------------
 all_results = {}
@@ -66,57 +68,71 @@ for name, inst in instances.items():
         run_costs = []
         run_routes = []
         run_convergences = []
+        run_times = []
+        run_time_to_best = []
 
         for run_idx in range(n_runs):
-            seed = run_idx + 1  # reproducible runs
-            best_ind, best_cost, best_routes, best_cost_per_gen = solve_qiea(
+            seed = run_idx + 1
+            start_time = time.time()
+            best_ind, best_cost, best_routes_run, best_cost_per_gen_run = solve_qiea(
                 inst,
                 pop_size=param["pop_size"],
                 generations=param["generations"],
                 delta_theta=param["delta_theta"],
                 seed=seed
             )
+            run_time = time.time() - start_time
+            run_times.append(run_time)
             run_costs.append(best_cost)
-            run_routes.append(best_routes)
-            run_convergences.append(best_cost_per_gen)
+            run_routes.append(best_routes_run)
+            run_convergences.append(best_cost_per_gen_run)
+
+            # Find generation where best cost was first achieved
+            try:
+                first_best_gen = next(i for i, cost in enumerate(best_cost_per_gen_run)
+                                      if abs(cost - best_cost) < tolerance)
+                time_to_best = sum(run_time / len(best_cost_per_gen_run) for _ in range(first_best_gen + 1))
+            except StopIteration:
+                first_best_gen = 0
+                time_to_best = 0.0
+            run_time_to_best.append(time_to_best)
+
+            print(f"Run {run_idx+1} | Best cost: {best_cost:.2f} found at generation {first_best_gen} (~{time_to_best:.2f}s)")
 
         # Aggregate results
-        best_cost = min(run_costs)
+        best_cost_overall = min(run_costs)
         avg_cost = sum(run_costs) / len(run_costs)
         worst_cost = max(run_costs)
-        best_idx = run_costs.index(best_cost)
+        avg_runtime = sum(run_times) / len(run_times)
+        avg_time_to_best = sum(run_time_to_best) / len(run_time_to_best)
+        best_idx = run_costs.index(best_cost_overall)
         best_routes = run_routes[best_idx]
         best_convergence = run_convergences[best_idx]
 
-        print(f"{name} | {param} | Best: {best_cost:.2f}, Avg: {avg_cost:.2f}, Worst: {worst_cost:.2f}")
+        print(f"{name} | {param} | Best: {best_cost_overall:.2f}, Avg: {avg_cost:.2f}, Worst: {worst_cost:.2f}, "
+              f"Avg Runtime: {avg_runtime:.2f}s, Avg Time to Best: {avg_time_to_best:.2f}s")
 
         # Store results
         all_results[name].append({
             "param": param,
-            "best_cost": best_cost,
+            "best_cost": best_cost_overall,
             "avg_cost": avg_cost,
             "worst_cost": worst_cost,
+            "avg_runtime": avg_runtime,
+            "avg_time_to_best": avg_time_to_best,
             "best_routes": best_routes,
             "convergence": best_convergence
         })
 
-    
-        best_ind_plot, best_cost_plot, best_routes_plot, best_convergence_plot = solve_qiea(
-            inst,
-            pop_size=param["pop_size"],
-            generations=param["generations"],
-            delta_theta=param["delta_theta"],
-            seed=1  # fixed seed for reproducible plots
-        )
-
+        # ------------------- Save Plots -------------------
         # Route plot
         plot_file = f"results/{name}_routes_pop{param['pop_size']}_gen{param['generations']}.png"
-        plot_routes(inst, best_routes_plot, plot_file)
+        plot_routes(inst, best_routes, plot_file)
         print(f"Route plot saved to {plot_file}")
 
         # Convergence plot
         plt.figure()
-        plt.plot(best_convergence_plot, marker='o')
+        plt.plot(best_convergence, marker='o')
         plt.xlabel("Generation")
         plt.ylabel("Best Cost")
         plt.title(f"{name} QIEA Convergence (pop={param['pop_size']}, gen={param['generations']})")

@@ -47,5 +47,5 @@ MEDIUM_INSTANCE_2 = {
         15: (53, 41),
         16: (34, 18)
     },
-    "VEHICLES": 22
+    "VEHICLES": 17
 }

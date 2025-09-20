@@ -1,27 +1,23 @@
 import random
+from typing import List
 
-def create_individual(customers):
-    """
-    Create a random permutation of customer IDs.
-    This is the chromosome representation.
-    """
-    return random.sample(list(customers.keys()), len(customers))
+class Individual:
+    def __init__(self, perm: List[int], cuts: List[int]):
+        self.perm = perm
+        self.cuts = cuts
 
-def decode_routes(individual, num_vehicles):
-    """
-    Split a customer permutation into 'num_vehicles' routes.
-    Ensures nearly equal number of customers per vehicle.
-    """
-    n = len(individual)
-    base = n // num_vehicles
-    rem = n % num_vehicles
+def random_individual(N: int, V: int, rng: random.Random) -> Individual:
+    perm = list(range(1, N+1))
+    rng.shuffle(perm)
+    cuts = sorted(rng.sample(range(1, N), V-1)) if V > 1 else []
+    return Individual(perm, cuts)
 
-    sizes = [base + (1 if i < rem else 0) for i in range(num_vehicles)]
 
+def decode_routes(ind: Individual, n_vehicles: int) -> List[List[int]]:
     routes = []
-    idx = 0
-    for s in sizes:
-        routes.append(individual[idx:idx+s])
-        idx += s
-
+    prev = 0
+    cuts = ind.cuts + [len(ind.perm)]
+    for c in cuts:
+        routes.append(ind.perm[prev:c])
+        prev = c
     return routes

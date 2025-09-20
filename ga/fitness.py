@@ -1,27 +1,19 @@
-import math
-from ga.chromosome import decode_routes
+from ga.chromosome import decode_routes, Individual
+from typing import List
+import numpy as np
 
-def euclidean(a, b):
-    """Compute Euclidean distance between two points."""
-    return math.hypot(a[0] - b[0], a[1] - b[1])
+def route_distance(route: List[int], dmat: np.ndarray) -> float:
+    if not route:
+        return 0
+    total = dmat[0, route[0]]  # depot to first
+    for i in range(len(route)-1):
+        total += dmat[route[i], route[i+1]]
+    total += dmat[route[-1], 0]  # return to depot
+    return total
 
-def fitness(individual, depot, customers, num_vehicles):
-    """
-    Compute total route distance for a GA individual.
-    Lower distance = better fitness.
-    """
-    routes = decode_routes(individual, num_vehicles)
-    total_distance = 0
+def total_distance(ind: Individual, dmat: np.ndarray, V: int) -> float:
+    routes = decode_routes(ind, V)
+    return sum(route_distance(r, dmat) for r in routes)
 
-    for r in routes:
-        if not r:
-            continue
-        # Depot -> first customer
-        total_distance += euclidean(depot, customers[r[0]])
-        # Customer -> customer
-        for i in range(len(r) - 1):
-            total_distance += euclidean(customers[r[i]], customers[r[i+1]])
-        # Last customer -> depot
-        total_distance += euclidean(customers[r[-1]], depot)
-
-    return total_distance
+def fitness(ind: Individual, dmat: np.ndarray, V: int) -> float:
+    return -total_distance(ind, dmat, V)  # GA maximizes fitness

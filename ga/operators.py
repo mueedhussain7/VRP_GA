@@ -1,34 +1,42 @@
 import random
+from typing import List
 
-def crossover(parent1, parent2):
-    """
-    Ordered Crossover (OX) for permutation chromosomes.
-    Returns a child permutation.
-    """
-    n = len(parent1)
-    a, b = sorted(random.sample(range(n), 2))
-    child = [None] * n
-
-    # Copy segment from parent1
-    child[a:b+1] = parent1[a:b+1]
-
-    # Fill remaining positions from parent2 in order
-    p2_items = [x for x in parent2 if x not in child]
+def order_crossover(p1: List[int], p2: List[int], rng: random.Random) -> List[int]:
+    N = len(p1)
+    a, b = sorted(rng.sample(range(N), 2))
+    child = [None]*N
+    child[a:b] = p1[a:b]
+    fill = [x for x in p2 if x not in child]
     j = 0
-    for i in range(n):
+    for i in range(N):
         if child[i] is None:
-            child[i] = p2_items[j]
+            child[i] = fill[j]
             j += 1
-
     return child
 
-def mutate(individual, pm):
-    """
-    Swap mutation: with probability pm, swap two random genes.
-    """
-    n = len(individual)
-    for i in range(n):
-        if random.random() < pm:
-            j = random.randrange(n)
-            individual[i], individual[j] = individual[j], individual[i]
-    return individual
+def cuts_crossover(c1: List[int], c2: List[int], N: int, V: int, rng: random.Random) -> List[int]:
+    if V <= 2:
+        point = 1
+    else:
+        point = rng.randint(1, V-2)
+    child = c1[:point] + c2[point:]
+    child = sorted(set([x for x in child if 1 <= x < N]))
+    while len(child) < V-1:
+        val = rng.randint(1, N-1)
+        if val not in child:
+            child.append(val)
+    child.sort()
+    return child
+
+def swap_mutation_perm(perm: List[int], pm: float, rng: random.Random):
+    for i in range(len(perm)):
+        if rng.random() < pm:
+            j = rng.randint(0, len(perm)-1)
+            perm[i], perm[j] = perm[j], perm[i]
+
+def jitter_mutation_cuts(cuts: List[int], pm: float, N: int, rng: random.Random):
+    for i in range(len(cuts)):
+        if rng.random() < pm:
+            delta = rng.randint(-1, 1)
+            cuts[i] = min(max(1, cuts[i]+delta), N-1)
+    cuts.sort()

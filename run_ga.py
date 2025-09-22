@@ -2,6 +2,7 @@ import os, shutil, time, math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 from ga.ga_solver import genetic_algorithm
 from utils import customers_to_ordered_list, distance_matrix
 from plots_tables import plot_routes_matplotlib, plot_convergence_histories, plot_instance_metric
@@ -164,5 +165,74 @@ for _, row in df.iterrows():
     })
 df_conv = pd.DataFrame(rows)
 df_conv.to_csv(os.path.join(RESULTS_DIR, "convergence_rate.csv"), index=False)
+
+# Set style for better-looking plots
+plt.style.use('seaborn-v0_8-darkgrid')
+sns.set_palette("husl")
+
+# Define consistent colors for each parameter set
+colors = {'Standard': '#1f77b4', 'Large_Scale': '#2ca02c', 'compact': '#ff7f0e'}
+
+# 1. Solution Quality Bar Chart
+fig, ax = plt.subplots(figsize=(12, 6))
+instances_ordered = ['Small-1', 'Small-2', 'Medium-1', 'Medium-2', 'Large-1', 'Large-2']
+x = np.arange(len(instances_ordered))
+width = 0.25
+
+for i, param_set in enumerate(['Standard', 'Large_Scale', 'compact']):
+    data = df[df['ParamSet'] == param_set]
+    distances = [data[data['Instance'] == inst]['MeanDist'].values[0] for inst in instances_ordered]
+    std_devs = [data[data['Instance'] == inst]['StdDist'].values[0] for inst in instances_ordered]
+    
+    bars = ax.bar(x + i*width - width, distances, width, 
+                   label=param_set, color=colors[param_set], alpha=0.8,
+                   yerr=std_devs, capsize=3, ecolor='gray')
+
+ax.set_xlabel('Instance', fontsize=12, fontweight='bold')
+ax.set_ylabel('Mean Distance', fontsize=12, fontweight='bold')
+ax.set_title('Solution Quality Comparison Across All Instances', fontsize=14, fontweight='bold')
+ax.set_xticks(x)
+ax.set_xticklabels(instances_ordered, rotation=0)
+ax.legend(title='Configuration', framealpha=0.9)
+ax.grid(True, alpha=0.3, axis='y')
+plt.tight_layout()
+plt.savefig(os.path.join(RESULTS_DIR, 'solution_quality_comparison.png'), dpi=300, bbox_inches='tight')
+plt.close()
+
+# 2. Runtime Comparison (Log Scale)
+fig, ax = plt.subplots(figsize=(12, 6))
+for i, param_set in enumerate(['Standard', 'Large_Scale', 'compact']):
+    data = df[df['ParamSet'] == param_set]
+    runtimes = [data[data['Instance'] == inst]['MeanRuntime'].values[0] for inst in instances_ordered]
+    bars = ax.bar(x + i*width - width, runtimes, width, 
+                   label=param_set, color=colors[param_set], alpha=0.8)
+
+ax.set_xlabel('Instance', fontsize=12, fontweight='bold')
+ax.set_ylabel('Mean Runtime (seconds, log scale)', fontsize=12, fontweight='bold')
+ax.set_title('Runtime Performance Comparison', fontsize=14, fontweight='bold')
+ax.set_xticks(x)
+ax.set_xticklabels(instances_ordered, rotation=0)
+ax.set_yscale('log')
+ax.legend(title='Configuration', framealpha=0.9)
+ax.grid(True, alpha=0.3, axis='y', which='both')
+plt.tight_layout()
+plt.savefig(os.path.join(RESULTS_DIR, 'runtime_comparison.png'), dpi=300, bbox_inches='tight')
+plt.close()
+
+# 3. Convergence Rate Heatmap
+fig, ax = plt.subplots(figsize=(8, 6))
+heatmap_data = df_conv.pivot(index='Instance', columns='ParamSet', values='Avg')
+heatmap_data = heatmap_data[['Standard', 'Large_Scale', 'compact']]
+sns.heatmap(heatmap_data, annot=True, fmt='.1f', cmap='YlOrRd_r', 
+            cbar_kws={'label': 'Generations to Convergence'},
+            vmin=0, vmax=300)
+ax.set_xlabel('Configuration', fontsize=12, fontweight='bold')
+ax.set_ylabel('Instance', fontsize=12, fontweight='bold')
+ax.set_title('Average Generations to Reach 95% of Final Solution', fontsize=13, fontweight='bold')
+plt.setp(ax.get_xticklabels(), rotation=0, ha='center')
+plt.setp(ax.get_yticklabels(), rotation=0)
+plt.tight_layout()
+plt.savefig(os.path.join(RESULTS_DIR, 'convergence_heatmap.png'), dpi=300, bbox_inches='tight')
+plt.close()
 
 print("\nAll experiments done. CSVs and plots are in the results/ folder.")

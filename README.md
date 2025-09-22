@@ -1,53 +1,151 @@
-# Vehicle Routing Problem Using Quantum-Inspired Evolutionary Algorithm (QIEA)
+# Vehicle Routing Problem Solver using Genetic Algorithms
 
 ## Overview
+This project implements a genetic algorithm-based solver for the Vehicle Routing Problem (VRP). The solver optimizes delivery routes for multiple vehicles serving customers from a central depot, aiming to minimize total travel distance while respecting vehicle constraints.
 
-This project implements a Quantum-Inspired Evolutionary Algorithm (QIEA) to solve the Vehicle Routing Problem (VRP). The QIEA finds efficient routes for multiple vehicles to serve all customers from a central depot while minimizing the total travel distance.
+## Features
 
-## Installation
+### Genetic Algorithm Core
+- **Advanced Chromosome Design**
+  - Dual-part encoding (permutation + cuts)
+  - Efficient route representation
+  - Vehicle assignment optimization
 
-Clone the repository, create a virtual environment, and install dependencies:
+- **Sophisticated Genetic Operators**
+  - Order Crossover (OX) for route permutations
+  - Custom cuts crossover for vehicle assignments
+  - Adaptive mutation rates
+  - Route-aware mutation strategies
+
+### Comprehensive Analysis Tools
+- Route visualization with matplotlib
+- Convergence history tracking
+- Performance metrics collection
+- Solution quality analysis
+
+### Configurable Parameters
+Three pre-tuned parameter sets:
+```python
+"Standard": {
+    "pop_size": 80,
+    "generations": 300,
+    "k_tourn": 3,
+    "pc": 0.8,
+    "pm_perm": 0.02,
+    "pm_cuts": 0.08
+}
+
+"Large_Scale": {
+    "pop_size": 150,
+    "generations": 500,
+    "k_tourn": 3,
+    "pc": 0.85,
+    "pm_perm": 0.05,
+    "pm_cuts": 0.15
+}
+
+"Compact": {
+    "pop_size": 30,
+    "generations": 200,
+    "k_tourn": 5,
+    "pc": 0.7,
+    "pm_perm": 0.008,
+    "pm_cuts": 0.3
+}
+```
+
+## Requirements
 
 ```bash
-git clone <repo-url>
+numpy>=1.20.0
+pandas>=1.3.0
+matplotlib>=3.4.0
+seaborn>=0.11.0
+```
+
+## Quick Start
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/VRP_GA.git
 cd VRP_GA
-python -m venv venv
-source venv/bin/activate  # macOS/Linux
+```
+
+2. Set up environment and install:
+```bash
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Usage
-
-Run the main script to execute QIEA on all provided VRP instances:
-
+3. Run the solver:
 ```bash
 python run_ga.py
 ```
 
-This generates:
+## Project Structure
 
-* Route plots showing the best vehicle routes
-* Convergence plots showing best cost per generation
+```
+VRP_GA/
+├── ga/                     # Genetic Algorithm core
+│   ├── chromosome.py      # Chromosome representation
+│   ├── fitness.py         # Fitness calculations
+│   ├── ga_solver.py       # Main GA implementation
+│   └── operators.py       # Genetic operators
+├── data/                  # Problem instances
+│   ├── small_instances.py
+│   ├── medium_instances.py
+│   └── large_instances.py
+├── utils.py              # Utility functions
+├── plots_tables.py       # Visualization tools
+└── run_ga.py            # Main execution script
+```
 
-Both types of plots are saved in the `results/` folder. QIEA parameters (`pop_size`, `generations`, `delta_theta`) can be configured inside `run_ga.py`.
+## Output
 
-## QIEA Design
+The solver generates comprehensive results in the `results/` directory:
 
-* Chromosome Representation: Each individual is a permutation of customer indices
-* Selection: Tournament selection
-* Quantum-inspired update: Rotation of probability amplitudes towards the best solution
-* Fitness Function: Total Euclidean distance of all vehicle routes (lower is better)
+- `results_summary.csv`: Summary statistics for all runs
+- `solution_quality.csv`: Detailed solution quality metrics
+- `*_best_route.png`: Visualizations of best routes found
+- `*_convergence.png`: Convergence plots
+- Performance analysis plots
 
-## VRP Instances
+## Example Output
 
-* **Small:** 2–3 vehicles, 10–12 customers
-* **Medium:** 15–22 vehicles, 16–20 customers
-* **Large:** 45–50 vehicles, 50 customers
+```
+=== Instance Small-1: N=12, V=2 ===
+  ParamSet: Standard -> {...}
+    run 1/15 done: best_dist=245.32, time=1.23s
+    saved plots: results/Small-1_Standard_best_route.png, 
+                results/Small-1_Standard_convergence.png
+```
 
-## Outputs
+## Analysis Features
 
-For each instance and parameter set, the script outputs:
+- Route distance optimization
+- Convergence rate analysis
+- Runtime performance metrics
+- Solution quality comparisons
+- Visual route representations
 
-* Best, average, and worst cost (total route distance)
-* Vehicle route plots
-* QIEA convergence plots
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+
+## Future Improvements
+
+- [ ] Multi-objective optimization support
+- [ ] Additional genetic operators
+- [ ] Parallel computation capabilities
+- [ ] Real-time visualization
+- [ ] API integration capabilities
